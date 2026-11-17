@@ -1,0 +1,124 @@
+/* Cayo Verde HUD and menus: warm sunset palette, heavy readable type. */
+html, body { margin: 0; height: 100%; overflow: hidden; background: #1a1410; }
+body { font-family: Arial, Helvetica, sans-serif; color: #fff; }
+#game-canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+
+#hud { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
+#hud.hidden { display: none; }
+
+#minimap-wrap {
+  position: absolute; top: 14px; left: 14px; width: 220px; height: 220px;
+  border-radius: 50%; overflow: hidden; border: 3px solid rgba(255,255,255,0.4);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.5); background: #1d2b1d;
+}
+#minimap { width: 100%; height: 100%; display: block; }
+
+#top-right { position: absolute; top: 16px; right: 20px; text-align: right; text-shadow: 0 2px 4px #000; }
+#cash { font-size: 30px; font-weight: bold; color: #8fe08a; }
+#stars { font-size: 26px; letter-spacing: 4px; color: #ffd23c; }
+#stars.hot { color: #ff5040; animation: pulse 0.7s infinite alternate; }
+#medals { font-size: 16px; color: #ffd23c; margin-top: 2px; }
+@keyframes pulse { from { opacity: 1; } to { opacity: 0.55; } }
+
+#mission-tracker {
+  position: absolute; top: 16px; left: 50%; transform: translateX(-50%);
+  text-align: center; display: none; text-shadow: 0 2px 4px #000;
+  background: rgba(0,0,0,0.35); padding: 8px 22px; border-radius: 8px;
+}
+#mission-tracker.visible { display: block; }
+#mission-title { font-size: 13px; letter-spacing: 3px; color: #ffd23c; font-weight: bold; }
+#mission-objective { font-size: 19px; font-weight: bold; }
+#mission-dist { font-size: 14px; color: #cfe8ff; }
+
+#feed { position: absolute; left: 16px; top: 250px; width: 330px; }
+.feed-line {
+  background: rgba(0,0,0,0.45); border-left: 3px solid #ffd23c; padding: 6px 10px;
+  margin-bottom: 6px; border-radius: 0 6px 6px 0; font-size: 14px; line-height: 1.35;
+  transition: opacity 0.6s;
+}
+.feed-line.fade { opacity: 0; }
+
+#bottom-left { position: absolute; left: 16px; bottom: 18px; display: flex; align-items: center; gap: 10px; }
+#health-bar { width: 220px; height: 16px; background: rgba(0,0,0,0.55); border: 2px solid rgba(255,255,255,0.5); border-radius: 8px; overflow: hidden; }
+#health-fill { height: 100%; width: 100%; background: #7ddb6a; transition: width 0.2s; }
+#health-fill.low { background: #e84a3a; }
+#health-text { font-size: 22px; font-weight: bold; text-shadow: 0 2px 4px #000; }
+
+#bottom-right { position: absolute; right: 20px; bottom: 18px; text-align: right; text-shadow: 0 2px 4px #000; }
+#weapon { font-size: 20px; font-weight: bold; letter-spacing: 2px; }
+#ammo { font-size: 16px; color: #cfe8ff; }
+#speed { font-size: 26px; font-weight: bold; color: #ffd23c; }
+
+#dialogue {
+  position: absolute; left: 50%; bottom: 90px; transform: translateX(-50%);
+  width: min(620px, 80vw); background: rgba(10,10,16,0.78); border-radius: 10px;
+  padding: 12px 18px; display: none; border: 1px solid rgba(255,210,60,0.4);
+}
+#dialogue.visible { display: block; }
+#dialogue-name { font-size: 13px; letter-spacing: 2px; color: #ffd23c; font-weight: bold; margin-bottom: 4px; }
+#dialogue-text { font-size: 18px; line-height: 1.4; }
+
+#banner {
+  position: absolute; left: 50%; top: 22%; transform: translateX(-50%) scale(0.9);
+  text-align: center; opacity: 0; transition: opacity 0.25s, transform 0.25s;
+  text-shadow: 0 3px 10px #000; pointer-events: none;
+}
+#banner.visible { opacity: 1; transform: translateX(-50%) scale(1); }
+#banner-title { font-size: 52px; font-weight: bold; letter-spacing: 4px; color: #ffd23c; }
+#banner-sub { font-size: 20px; }
+
+#hint {
+  position: absolute; left: 50%; bottom: 170px; transform: translateX(-50%);
+  background: rgba(0,0,0,0.6); padding: 8px 16px; border-radius: 20px; font-size: 16px;
+  display: none; border: 1px solid rgba(255,255,255,0.35); white-space: nowrap;
+}
+#hint.visible { display: block; }
+
+#crosshair {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  font-size: 26px; font-weight: bold; color: #fff; text-shadow: 0 0 4px #000; display: none;
+}
+#crosshair.visible { display: block; }
+
+#bust-meter {
+  position: absolute; left: 50%; top: 110px; transform: translateX(-50%);
+  display: none; text-align: center; font-weight: bold; letter-spacing: 2px;
+  text-shadow: 0 2px 4px #000; font-size: 14px;
+}
+#bust-meter.visible { display: block; }
+#bust-track { width: 220px; height: 10px; background: rgba(0,0,0,0.55); border-radius: 5px; overflow: hidden; margin-top: 4px; }
+#bust-fill { height: 100%; width: 0; background: #6080ff; }
+
+#vignette { position: absolute; inset: 0; pointer-events: none; opacity: 0;
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(200,20,10,0.55) 100%); }
+#vignette.flash { animation: hurt 0.5s ease-out; }
+@keyframes hurt { 0% { opacity: 1; } 100% { opacity: 0; } }
+
+.menu {
+  position: fixed; inset: 0; z-index: 10; display: none;
+  align-items: center; justify-content: center;
+  background: radial-gradient(ellipse at center, rgba(20,12,8,0.45), rgba(10,6,4,0.82));
+}
+.menu.visible { display: flex; }
+.panel { text-align: center; max-width: 640px; padding: 30px 40px; }
+.panel h1 {
+  font-size: 64px; margin: 0 0 4px; letter-spacing: 6px; color: #ffd23c;
+  text-shadow: 0 4px 0 #b8574a, 0 8px 24px rgba(0,0,0,0.7);
+}
+.panel h1.red { color: #ff5040; text-shadow: 0 4px 0 #701510, 0 8px 24px rgba(0,0,0,0.7); }
+.panel h1.blue { color: #7fb2d9; text-shadow: 0 4px 0 #1e3a5a, 0 8px 24px rgba(0,0,0,0.7); }
+.tagline { font-size: 22px; letter-spacing: 4px; color: #ffe9b0; margin: 0 0 18px; }
+.story { font-size: 18px; line-height: 1.5; color: #f2e8d8; }
+.buttons { display: flex; flex-direction: column; gap: 10px; align-items: center; margin: 24px 0; }
+.buttons button {
+  pointer-events: auto; font-size: 20px; font-weight: bold; letter-spacing: 1px;
+  padding: 12px 42px; min-width: 260px; cursor: pointer; color: #1a1410;
+  background: linear-gradient(#ffe9a0, #ffd23c); border: none; border-radius: 8px;
+  box-shadow: 0 4px 0 #a8842a, 0 6px 16px rgba(0,0,0,0.5);
+}
+.buttons button:hover { filter: brightness(1.08); }
+.buttons button:active { transform: translateY(3px); box-shadow: 0 1px 0 #a8842a; }
+.foot { font-size: 14px; line-height: 1.6; color: #d8cbb8; }
+.keys { margin: 10px auto 4px; border-collapse: collapse; font-size: 16px; text-align: left; }
+.keys td { padding: 6px 14px; border-bottom: 1px solid rgba(255,255,255,0.15); }
+.keys td:first-child { color: #ffd23c; font-weight: bold; white-space: nowrap; }

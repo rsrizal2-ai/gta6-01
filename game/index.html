@@ -3,17 +3,121 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Block Dodger</title>
-<style>
-  html, body { margin: 0; height: 100%; overflow: hidden; background: #11141b; }
-  #game { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
-  /* Read aloud, never shown: the status line screen readers announce. */
-  #status { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-</style>
+<title>Cayo Verde — Open-World Crime Game</title>
+<link rel="stylesheet" href="./style.css">
+<script type="importmap">
+{ "imports": { "three": "./vendor/three.module.min.js" } }
+</script>
 </head>
 <body>
-<canvas id="game" aria-label="Block Dodger: move the paddle left and right to dodge falling blocks and catch coins"></canvas>
-<p id="status" role="status" aria-live="polite"></p>
+<canvas id="game-canvas" aria-label="Cayo Verde: an open-world crime game. Drive, explore the island city, and run jobs for Sal Marin."></canvas>
+
+<div id="hud">
+  <div id="minimap-wrap"><canvas id="minimap" width="220" height="220"></canvas></div>
+  <div id="top-right">
+    <div id="cash">$150</div>
+    <div id="stars">☆☆☆☆☆</div>
+    <div id="medals">☀ 0/10</div>
+  </div>
+  <div id="mission-tracker">
+    <div id="mission-title"></div>
+    <div id="mission-objective"></div>
+    <div id="mission-dist"></div>
+  </div>
+  <div id="feed"></div>
+  <div id="bottom-left">
+    <div id="health-bar"><div id="health-fill"></div></div>
+    <div id="health-text">100</div>
+  </div>
+  <div id="bottom-right">
+    <div id="weapon">FISTS</div>
+    <div id="ammo"></div>
+    <div id="speed"></div>
+  </div>
+  <div id="dialogue"><div id="dialogue-name"></div><div id="dialogue-text"></div></div>
+  <div id="banner"><div id="banner-title"></div><div id="banner-sub"></div></div>
+  <div id="hint"></div>
+  <div id="crosshair">+</div>
+  <div id="bust-meter"><span>BUSTED?</span><div id="bust-track"><div id="bust-fill"></div></div></div>
+  <div id="vignette"></div>
+</div>
+
+<div id="menu-start" class="menu visible">
+  <div class="panel">
+    <h1>CAYO VERDE</h1>
+    <p class="tagline">Sun, salt, and sirens.</p>
+    <p class="story">Dani Vega drives for the fixer Sal Marín on an island city that never
+    looks away. Steal cars, lose the cops, run five jobs — and get out clean.</p>
+    <div class="buttons">
+      <button id="btn-new">New Game</button>
+      <button id="btn-continue">Continue</button>
+      <button id="btn-controls">Controls</button>
+    </div>
+    <p class="foot">WASD drive &amp; walk · Mouse camera · F interact · 1/2 weapons · Click attack<br>
+    An original game: its city, names, story and sounds are its own.</p>
+  </div>
+</div>
+
+<div id="menu-pause" class="menu">
+  <div class="panel">
+    <h1>PAUSED</h1>
+    <div class="buttons">
+      <button id="btn-resume">Resume</button>
+      <button id="btn-save">Save Game</button>
+      <button id="btn-controls-pause">Controls</button>
+      <button id="btn-menu">Quit to Menu</button>
+    </div>
+    <p class="foot">Tip: a fresh coat at Luz Auto Paint clears your wanted level — for $100.</p>
+  </div>
+</div>
+
+<div id="menu-controls" class="menu">
+  <div class="panel">
+    <h1>CONTROLS</h1>
+    <table class="keys">
+      <tr><td>W A S D / Arrows</td><td>Walk / drive (Shift to run)</td></tr>
+      <tr><td>Mouse / Drag</td><td>Orbit camera (click the game to lock the mouse)</td></tr>
+      <tr><td>Space</td><td>Jump / handbrake while driving</td></tr>
+      <tr><td>F</td><td>Enter or exit a car · talk · pick up · repaint · save</td></tr>
+      <tr><td>1 / 2</td><td>Fists / pistol</td></tr>
+      <tr><td>Left click</td><td>Punch / shoot</td></tr>
+      <tr><td>R</td><td>Reload</td></tr>
+      <tr><td>H</td><td>Horn</td></tr>
+      <tr><td>M</td><td>Mute sound</td></tr>
+      <tr><td>P / Esc</td><td>Pause</td></tr>
+    </table>
+    <div class="buttons"><button id="btn-back-controls">Back</button></div>
+  </div>
+</div>
+
+<div id="screen-wasted" class="menu">
+  <div class="panel">
+    <h1 class="red">WASTED</h1>
+    <p class="story">Cayo Verde General patched you up. Hospital bill: $200.</p>
+    <div class="buttons"><button id="btn-respawn">Leave the hospital</button></div>
+  </div>
+</div>
+
+<div id="screen-busted" class="menu">
+  <div class="panel">
+    <h1 class="blue">BUSTED</h1>
+    <p class="story">The precinct held you overnight. Bail: $150.</p>
+    <div class="buttons"><button id="btn-release">Walk free</button></div>
+  </div>
+</div>
+
+<div id="screen-complete" class="menu">
+  <div class="panel">
+    <h1>CAYO VERDE COMPLETE</h1>
+    <p class="story">Dani made it across the causeway — and the ledger ended Kroll.</p>
+    <p id="complete-stats" class="story"></p>
+    <div class="buttons">
+      <button id="btn-freeroam">Keep exploring</button>
+      <button id="btn-menu-complete">Main Menu</button>
+    </div>
+  </div>
+</div>
+
 <script type="module" src="./src/main.js"></script>
 </body>
 </html>

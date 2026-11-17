@@ -1,53 +1,80 @@
-// Keyboard and pointer input. Held keys give a steering direction; one-shot presses (start or
-// restart, pause) are queued as bit flags and taken once by the loop, so a press between two
-// frames is never lost and never counted twice.
+// Keyboard and mouse state with edge-triggered actions. Pointer lock gives
+// mouse-look; dragging with the left button held orbits the camera too, so
+// the game stays playable without lock (and inside headless test runs).
+export class Input {
+  constructor(canvas) {
+    this.keys = new Set();
+    this.justPressed = new Set();
+    this.mouseDX = 0;
+    this.mouseDY = 0;
+    this.mouseDown = false;
+    this.mouseClicked = false;
+    this.dragging = false;
+    this.locked = false;
+    this.lockAcquiredAt = 0;
+    this.lastX = 0;
+    this.lastY = 0;
+    this.enabled = true;
 
-export const ACTION_CONFIRM = 1;
-export const ACTION_PAUSE = 2;
+    window.addEventListener('keydown', (e) => {
+      if (!this.enabled) return;
+      if (e.repeat) return;
+      this.keys.add(e.code);
+      this.justPressed.add(e.code);
+      if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault();
+    });
+    window.addEventListener('keyup', (e) => this.keys.delete(e.code));
+    window.addEventListener('blur', () => { this.keys.clear(); this.mouseDown = false; this.dragging = false; });
 
-const LEFT = new Set(['ArrowLeft', 'KeyA']);
-const RIGHT = new Set(['ArrowRight', 'KeyD']);
-const CONFIRM = new Set(['Space', 'Enter']);
-const PAUSE = new Set(['KeyP', 'Escape']);
+    canvas.addEventListener('mousedown', (e) => {
+      this.mouseDown = true;
+      this.mouseClicked = true;
+      this.dragging = true;
+      this.lastX = e.clientX; this.lastY = e.clientY;
+    });
+    window.addEventListener('mouseup', () => { this.mouseDown = false; this.dragging = false; });
+    window.addEventListener('mousemove', (e) => {
+      if (this.locked) {
+        this.mouseDX += e.movementX || 0;
+        this.mouseDY += e.movementY || 0;
+      } else if (this.dragging) {
+        this.mouseDX += e.clientX - this.lastX;
+        this.mouseDY += e.clientY - this.lastY;
+        this.lastX = e.clientX; this.lastY = e.clientY;
+      }
+    });
+    document.addEventListener('pointerlockchange', () => {
+      this.locked = document.pointerLockElement === canvas;
+      if (this.locked) this.lockAcquiredAt = performance.now();
+    });
+    this.canvas = canvas;
+  }
 
-export function createInput(target) {
-  let left = false;
-  let right = false;
-  let actions = 0;
-
-  window.addEventListener('keydown', (event) => {
-    if (LEFT.has(event.code)) left = true;
-    else if (RIGHT.has(event.code)) right = true;
-    else if (CONFIRM.has(event.code)) {
-      if (!event.repeat) actions |= ACTION_CONFIRM;
-    } else if (PAUSE.has(event.code)) {
-      if (!event.repeat) actions |= ACTION_PAUSE;
-    } else return;
-    event.preventDefault();
-  });
-  window.addEventListener('keyup', (event) => {
-    if (LEFT.has(event.code)) left = false;
-    else if (RIGHT.has(event.code)) right = false;
-  });
-  // A key released while the tab is hidden never sends keyup: let go of everything on blur.
-  window.addEventListener('blur', () => {
-    left = false;
-    right = false;
-  });
-  target.addEventListener('pointerdown', () => {
-    actions |= ACTION_CONFIRM;
-  });
-
-  return {
-    /** -1 for left, 1 for right, 0 for neither or both. */
-    direction() {
-      return (right ? 1 : 0) - (left ? 1 : 0);
-    },
-    /** The one-shot presses since the last call, as ACTION_* flags. */
-    takeActions() {
-      const taken = actions;
-      actions = 0;
-      return taken;
-    },
-  };
+  requestLock() {
+    if (this.locked) return;
+    try { this.canvas.requestPointerLock(); } catch { /* pointer lock unavailable */ }
+  }
+  releaseLock() {
+    if (this.locked) document.exitPointerLock();
+  }
+  down(code) { return this.keys.has(code); }
+  pressed(code) { return this.justPressed.has(code); }
+  // WASD plus arrows; returns {x: strafe, y: forward} in -1..1.
+  moveAxes() {
+    let x = 0, y = 0;
+    if (this.down('KeyA') || this.down('ArrowLeft')) x -= 1;
+    if (this.down('KeyD') || this.down('ArrowRight')) x += 1;
+    if (this.down('KeyW') || this.down('ArrowUp')) y += 1;
+    if (this.down('KeyS') || this.down('ArrowDown')) y -= 1;
+    return { x, y };
+  }
+  consumeMouse() {
+    const dx = this.mouseDX, dy = this.mouseDY;
+    this.mouseDX = 0; this.mouseDY = 0;
+    return { dx, dy };
+  }
+  endFrame() {
+    this.justPressed.clear();
+    this.mouseClicked = false;
+  }
 }
